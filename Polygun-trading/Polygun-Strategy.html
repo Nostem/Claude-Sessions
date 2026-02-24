@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolyGun Copy Trading Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #1a1d24;
+    --border: #232730;
+    --accent: #00e5a0;
+    --accent2: #7b6ff0;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: var(–sans);
+min-height: 100vh;
+padding: 24px 16px 60px;
+}
+
+.noise {
+position: fixed; inset: 0; pointer-events: none; z-index: 0;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.03’/%3E%3C/svg%3E”);
+opacity: 0.4;
+}
+
+.container { max-width: 720px; margin: 0 auto; position: relative; z-index: 1; }
+
+header {
+margin-bottom: 36px;
+border-bottom: 1px solid var(–border);
+padding-bottom: 24px;
+}
+
+.badge {
+display: inline-block;
+font-family: var(–mono);
+font-size: 10px;
+letter-spacing: 0.15em;
+color: var(–accent);
+border: 1px solid var(–accent);
+padding: 3px 10px;
+border-radius: 2px;
+margin-bottom: 14px;
+text-transform: uppercase;
+}
+
+h1 {
+font-size: clamp(26px, 6vw, 40px);
+font-weight: 800;
+line-height: 1.1;
+letter-spacing: -0.02em;
+}
+
+h1 span { color: var(–accent); }
+
+.subtitle {
+margin-top: 10px;
+color: var(–muted);
+font-size: 14px;
+font-family: var(–mono);
+}
+
+/* SECTION */
+.section { margin-bottom: 32px; }
+
+.section-label {
+font-family: var(–mono);
+font-size: 10px;
+letter-spacing: 0.2em;
+color: var(–muted);
+text-transform: uppercase;
+margin-bottom: 14px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.section-label::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: var(–border);
+}
+
+/* WALLET CARDS */
+.wallet-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 18px;
+margin-bottom: 12px;
+transition: border-color 0.2s;
+}
+
+.wallet-card:hover { border-color: #333a47; }
+
+.wallet-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 10px;
+margin-bottom: 12px;
+}
+
+.wallet-name {
+font-weight: 700;
+font-size: 15px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.wallet-dot {
+width: 8px; height: 8px;
+border-radius: 50%;
+flex-shrink: 0;
+}
+
+.dot-green { background: var(–accent); box-shadow: 0 0 8px var(–accent); }
+.dot-blue  { background: var(–accent2); box-shadow: 0 0 8px var(–accent2); }
+.dot-amber { background: var(–warn); box-shadow: 0 0 8px var(–warn); }
+.dot-red   { background: var(–danger); box-shadow: 0 0 8px var(–danger); }
+
+.stats {
+display: flex;
+gap: 16px;
+flex-wrap: wrap;
+}
+
+.stat {
+font-family: var(–mono);
+font-size: 12px;
+}
+
+.stat-val { font-weight: 700; }
+.stat-val.green { color: var(–accent); }
+.stat-val.purple { color: var(–accent2); }
+.stat-val.amber { color: var(–warn); }
+.stat-label { color: var(–muted); font-size: 10px; margin-top: 1px; }
+
+.address-row {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 10px 14px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+margin-bottom: 12px;
+}
+
+.address-text {
+font-family: var(–mono);
+font-size: 11px;
+color: #a0a8b8;
+word-break: break-all;
+flex: 1;
+user-select: all;
+}
+
+.copy-btn {
+background: transparent;
+border: 1px solid var(–border);
+color: var(–muted);
+font-family: var(–mono);
+font-size: 10px;
+padding: 5px 10px;
+border-radius: 4px;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.15s;
+flex-shrink: 0;
+}
+
+.copy-btn:hover {
+border-color: var(–accent);
+color: var(–accent);
+}
+
+.copy-btn.copied {
+border-color: var(–accent);
+color: var(–accent);
+background: rgba(0, 229, 160, 0.08);
+}
+
+.strategy-row {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+gap: 8px;
+margin-top: 4px;
+}
+
+.strategy-item {
+background: var(–surface2);
+border-radius: 6px;
+padding: 10px 12px;
+border-left: 2px solid var(–border);
+}
+
+.strategy-item.accent { border-left-color: var(–accent); }
+.strategy-item.purple { border-left-color: var(–accent2); }
+.strategy-item.amber  { border-left-color: var(–warn); }
+
+.strategy-key {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 0.1em;
+margin-bottom: 3px;
+}
+
+.strategy-val {
+font-size: 13px;
+font-weight: 600;
+color: var(–text);
+}
+
+.tag {
+display: inline-block;
+font-family: var(–mono);
+font-size: 9px;
+padding: 2px 7px;
+border-radius: 3px;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+margin-top: 8px;
+}
+
+.tag-green  { background: rgba(0,229,160,0.12); color: var(–accent); }
+.tag-purple { background: rgba(123,111,240,0.12); color: var(–accent2); }
+.tag-amber  { background: rgba(245,158,11,0.12); color: var(–warn); }
+.tag-red    { background: rgba(239,68,68,0.12); color: var(–danger); }
+
+/* OVERALL STRATEGY */
+.info-box {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 18px;
+margin-bottom: 12px;
+}
+
+.info-box h3 {
+font-size: 13px;
+font-weight: 700;
+margin-bottom: 12px;
+color: var(–text);
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.info-box h3 .icon { color: var(–accent); }
+
+.info-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 8px;
+}
+
+@media (max-width: 480px) { .info-grid { grid-template-columns: 1fr; } }
+
+.info-item {
+background: var(–surface2);
+border-radius: 6px;
+padding: 10px 12px;
+}
+
+.info-label {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 0.1em;
+margin-bottom: 3px;
+}
+
+.info-val {
+font-size: 13px;
+font-weight: 600;
+color: var(–text);
+}
+
+.warning-box {
+background: rgba(245,158,11,0.07);
+border: 1px solid rgba(245,158,11,0.3);
+border-radius: 8px;
+padding: 14px 16px;
+font-family: var(–mono);
+font-size: 11px;
+color: var(–warn);
+line-height: 1.6;
+margin-bottom: 12px;
+}
+
+.warning-box strong { display: block; margin-bottom: 4px; font-size: 12px; }
+
+.step-list { counter-reset: steps; }
+
+.step {
+counter-increment: steps;
+display: flex;
+gap: 14px;
+align-items: flex-start;
+padding: 12px 0;
+border-bottom: 1px solid var(–border);
+}
+
+.step:last-child { border-bottom: none; }
+
+.step-num {
+flex-shrink: 0;
+width: 24px; height: 24px;
+border-radius: 50%;
+background: var(–surface2);
+border: 1px solid var(–border);
+font-family: var(–mono);
+font-size: 11px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: var(–accent);
+margin-top: 1px;
+}
+
+.step-content { flex: 1; }
+.step-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.step-desc { font-size: 12px; color: var(–muted); line-height: 1.5; font-family: var(–mono); }
+
+code {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 3px;
+padding: 1px 5px;
+font-family: var(–mono);
+font-size: 11px;
+color: var(–accent);
+}
+</style>
+
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+  <header>
+    <div class="badge">PolyGun · Polymarket · Copy Trading</div>
+    <h1>Copy Trading<br><span>Strategy Guide</span></h1>
+    <p class="subtitle">// 4 wallets · settings · risk management</p>
+  </header>
+
+  <!-- WALLETS -->
+
+  <div class="section">
+    <div class="section-label">Tracked Wallets</div>
+
+```
+<!-- Wallet 1 -->
+<div class="wallet-card">
+  <div class="wallet-header">
+    <div class="wallet-name">
+      <span class="wallet-dot dot-green"></span>
+      The Whale — 96% WR
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val green">$296k+</div><div class="stat-label">PnL</div></div>
+      <div class="stat"><div class="stat-val green">96%</div><div class="stat-label">Win Rate</div></div>
+    </div>
+  </div>
+  <div class="address-row">
+    <span class="address-text" id="addr1">0x9b979a065641e8cfde3022a30ed2d9415cf55e12</span>
+    <button class="copy-btn" onclick="copyAddr('addr1', this)">Copy</button>
+  </div>
+  <div class="strategy-row">
+    <div class="strategy-item accent">
+      <div class="strategy-key">Mode</div>
+      <div class="strategy-val">Fixed</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Amount</div>
+      <div class="strategy-val">$5–$10</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Price Range</div>
+      <div class="strategy-val">0.35 – 0.85</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Slippage</div>
+      <div class="strategy-val">5%</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Max Daily</div>
+      <div class="strategy-val">$50</div>
+    </div>
+  </div>
+  <span class="tag tag-amber">⚡ High frequency — cap daily spend</span>
+</div>
+
+<!-- Wallet 2 -->
+<div class="wallet-card">
+  <div class="wallet-header">
+    <div class="wallet-name">
+      <span class="wallet-dot dot-blue"></span>
+      The Limit King — 84% WR
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val purple">$213k+</div><div class="stat-label">PnL</div></div>
+      <div class="stat"><div class="stat-val purple">84%</div><div class="stat-label">Win Rate</div></div>
+    </div>
+  </div>
+  <div class="address-row">
+    <span class="address-text" id="addr2">0x12d6cccfc7470a3f4bafc53599a4779cbf2cf2a8</span>
+    <button class="copy-btn" onclick="copyAddr('addr2', this)">Copy</button>
+  </div>
+  <div class="strategy-row">
+    <div class="strategy-item purple">
+      <div class="strategy-key">Mode</div>
+      <div class="strategy-val">Percentage</div>
+    </div>
+    <div class="strategy-item purple">
+      <div class="strategy-key">Amount</div>
+      <div class="strategy-val">5–10%</div>
+    </div>
+    <div class="strategy-item purple">
+      <div class="strategy-key">Price Range</div>
+      <div class="strategy-val">0.25 – 0.80</div>
+    </div>
+    <div class="strategy-item purple">
+      <div class="strategy-key">Slippage</div>
+      <div class="strategy-val">3%</div>
+    </div>
+    <div class="strategy-item purple">
+      <div class="strategy-key">Orders</div>
+      <div class="strategy-val">Limits ON</div>
+    </div>
+  </div>
+  <span class="tag tag-purple">📊 Best for limit-order copying with -1% offset</span>
+</div>
+
+<!-- Wallet 3 -->
+<div class="wallet-card">
+  <div class="wallet-header">
+    <div class="wallet-name">
+      <span class="wallet-dot dot-green"></span>
+      The Steady — 73% WR
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val green">$23k+</div><div class="stat-label">PnL</div></div>
+      <div class="stat"><div class="stat-val green">73%</div><div class="stat-label">Win Rate</div></div>
+    </div>
+  </div>
+  <div class="address-row">
+    <span class="address-text" id="addr3">0x8278252ebbf354eca8ce316e680a0eaf02859464</span>
+    <button class="copy-btn" onclick="copyAddr('addr3', this)">Copy</button>
+  </div>
+  <div class="strategy-row">
+    <div class="strategy-item accent">
+      <div class="strategy-key">Mode</div>
+      <div class="strategy-val">Fixed</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Amount</div>
+      <div class="strategy-val">$15–$25</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Price Range</div>
+      <div class="strategy-val">0.30 – 0.90</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Slippage</div>
+      <div class="strategy-val">5%</div>
+    </div>
+    <div class="strategy-item accent">
+      <div class="strategy-key">Max Daily</div>
+      <div class="strategy-val">$75</div>
+    </div>
+  </div>
+  <span class="tag tag-green">✅ Core wallet — most reliable for beginners</span>
+</div>
+
+<!-- Wallet 4 -->
+<div class="wallet-card">
+  <div class="wallet-header">
+    <div class="wallet-name">
+      <span class="wallet-dot dot-amber"></span>
+      The Contrarian — 34% WR
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val amber">$64k+</div><div class="stat-label">PnL</div></div>
+      <div class="stat"><div class="stat-val amber">34%</div><div class="stat-label">Win Rate</div></div>
+    </div>
+  </div>
+  <div class="address-row">
+    <span class="address-text" id="addr4">0xd8f8c13644ea84d62e1ec88c5d1215e436eb0f11</span>
+    <button class="copy-btn" onclick="copyAddr('addr4', this)">Copy</button>
+  </div>
+  <div class="strategy-row">
+    <div class="strategy-item amber">
+      <div class="strategy-key">Mode</div>
+      <div class="strategy-val">Fixed</div>
+    </div>
+    <div class="strategy-item amber">
+      <div class="strategy-key">Amount</div>
+      <div class="strategy-val">$3–$5</div>
+    </div>
+    <div class="strategy-item amber">
+      <div class="strategy-key">Price Range</div>
+      <div class="strategy-val">0.05 – 0.40</div>
+    </div>
+    <div class="strategy-item amber">
+      <div class="strategy-key">Slippage</div>
+      <div class="strategy-val">8%</div>
+    </div>
+    <div class="strategy-item amber">
+      <div class="strategy-key">Max Daily</div>
+      <div class="strategy-val">$20</div>
+    </div>
+  </div>
+  <span class="tag tag-amber">🎲 Longshot specialist — tiny allocation only</span>
+  <span class="tag tag-red" style="margin-left:6px">Weather/niche markets</span>
+</div>
+```
+
+  </div>
+
+  <!-- PORTFOLIO SPLIT -->
+
+  <div class="section">
+    <div class="section-label">Recommended Portfolio Split</div>
+    <div class="info-box">
+      <h3><span class="icon">◈</span> Capital Allocation (per $200 deposit)</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">The Steady (73%)</div>
+          <div class="info-val">$80 — 40%</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">The Limit King (84%)</div>
+          <div class="info-val">$60 — 30%</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">The Whale (96%)</div>
+          <div class="info-val">$40 — 20%</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">The Contrarian (34%)</div>
+          <div class="info-val">$20 — 10%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL SETTINGS -->
+
+  <div class="section">
+    <div class="section-label">Global PolyGun Settings</div>
+    <div class="info-box">
+      <h3><span class="icon">⚙</span> Recommended Defaults</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Default Slippage</div>
+          <div class="info-val">5%</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Quickbuy Preset</div>
+          <div class="info-val">$10 / $25 / $50</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Daily Loss Cap</div>
+          <div class="info-val">$40 total</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Volume Alerts</div>
+          <div class="info-val">ON</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Expert Mode</div>
+          <div class="info-val">ON (advanced)</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Auto-redeem</div>
+          <div class="info-val">ON</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP STEPS -->
+
+  <div class="section">
+    <div class="section-label">Setup Sequence</div>
+    <div class="info-box">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Start bot & deposit</div>
+            <div class="step-desc">Open PolyGun → deposit USDC on Polygon. Min <code>$50</code> recommended to run all 4 wallets simultaneously.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Add The Steady first</div>
+            <div class="step-desc">Copy Trading → Add Copy Trade → paste Wallet 3 address → Fixed <code>$15</code> → price range <code>0.30–0.90</code> → slippage <code>5%</code> → max spend <code>$75</code>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Add The Limit King</div>
+            <div class="step-desc">Percentage mode <code>7%</code> → enable limit order copying → set price offset <code>-1%</code> → range <code>0.25–0.80</code> → slippage <code>3%</code>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Add The Whale</div>
+            <div class="step-desc">Fixed <code>$5</code> per trade (not more) → set daily cap <code>$50</code> → range <code>0.35–0.85</code>. High frequency means fees stack fast without a cap.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Add The Contrarian (optional)</div>
+            <div class="step-desc">Fixed <code>$3</code> max → range <code>0.05–0.40</code> (longshots only) → slippage <code>8%</code> → daily cap <code>$20</code>. Treat as lottery tickets, not core strategy.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-title">Daily check-in</div>
+            <div class="step-desc">Review PnL per wallet each day. If any wallet goes on a 3+ loss streak, pause it. Re-evaluate weekly via <code>polymarketanalytics.com/traders</code>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WARNING -->
+
+  <div class="warning-box">
+    <strong>⚠ Risk Reminder</strong>
+    Past win rates don't guarantee future results. Only use capital you can afford to lose. Start with smaller fixed amounts for the first 1–2 weeks before scaling up. The Contrarian wallet is highly speculative — treat it as a small side bet only.
+  </div>
+
+</div>
+
+<script>
+function copyAddr(id, btn) {
+  const text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // fallback for older browsers
+    const el = document.getElementById(id);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
