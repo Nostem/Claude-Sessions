@@ -340,3 +340,44 @@ Post the intake card for the first time:
 ### GitHub Tracking
 Added `CHANGELOG.md` and `README.md` to `Nostem/Claude-Sessions/OpenClaw/` for session tracking.
 Changelog updated after each seq completion going forward.
+
+
+---
+
+## Session 2 (continued) — 2026-02-25
+
+### Proactive Daily Transit Reports (seq 4 of initiative queue)
+
+**Goal:** Ongoing astrology content that builds Discord audience and funnels readers to the chart intake card.
+
+#### Built: `skills/transit-reports/SKILL.md`
+Format guide and style rules for transit posts:
+- Daily format: Moon sign lead, 3-5 bullets, grounded interpretation, CTA
+- Weekly format: biggest transit of the week, Moon journey, lunations, "best days for..." section, CTA
+- Discord rules: no tables, bullets with •, planet glyphs, under 2000 chars
+- CTA templates (varied week to week)
+- Consistency log instruction (note key themes in memory to avoid repetition)
+- ⚠️ Python binary warning: must use `/usr/bin/python3`, not `python3`
+
+#### Cron jobs added
+- `astro-daily-transits` — 7 AM EST daily (grok41-fast, 180s timeout)
+  - Runs `chart.py transits`, writes Discord post, logs theme to memory
+- `astro-weekly-preview` — 7 AM EST every Monday (grok41-fast, 240s timeout)
+  - Week-ahead preview covering major transits, Moon journey, lunations, best-day windows
+
+#### Bug fixed: Python binary in process_reading.py
+`process_reading.py` was using `sys.executable` (Homebrew Python 3.13, no kerykeion).
+Fixed: hardcoded to `/usr/bin/python3` (system Python, has kerykeion).
+
+#### TOOLS.md updated
+Added critical note: always use `/usr/bin/python3` for astrology scripts with correct/incorrect examples.
+
+---
+
+### Path Bug Fix (client-intake scripts)
+Discovered and fixed during first live reading submission (Alfredo Montan):
+- `save_request.py` and `process_reading.py` used `parents[2]` → resolved to `workspace/skills/` instead of workspace root
+- Fixed to `parents[3]`
+- State data migrated from `skills/state/` to correct `state/` path
+- Card message ID (`1476285049220370618`) and reading saved correctly
+- Lesson added to `tasks/lessons.md`
