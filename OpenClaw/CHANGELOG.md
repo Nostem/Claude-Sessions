@@ -273,3 +273,70 @@ Appended Config Safety section with:
 | ○ 5 | KB entity extraction backfill | pending |
 | ○ 6 | KB-Obsidian auto-export | pending |
 | ○ 7 | Cost visibility dashboard | pending |
+
+
+---
+
+## Session 2 (continued) — 2026-02-25
+
+### Astro Client Chart Reading Workflow (seq 3 of initiative queue)
+
+**Option chosen:** Public-facing (anyone in Discord can request a reading)
+
+#### Built: `skills/client-intake/SKILL.md`
+Complete workflow playbook for the intake pipeline:
+- Step 1: How to post the standing intake card (modal component JSON)
+- Step 2: How to handle modal submissions (save_request.py call)
+- Step 3: Full reading processing flow (chart scripts → interpretation → Discord delivery)
+- State file schema, privacy rules, error handling table, channel config notes
+
+#### Built: `skills/client-intake/scripts/save_request.py`
+State manager for the reading queue. Supports:
+- `--name/--date/--time/--city/--notes` — save new reading request (assigns `rdg-YYYYMMDD-{hash}` ID)
+- `--list` — show all readings and statuses
+- `--next` — JSON output of next pending reading (for cron)
+- `--mark-processing / --mark-done / --mark-failed` — lifecycle state transitions
+- `--set-card-id` — save intake card message ID after posting
+- `--set-chart` — attach PNG path to a reading record
+
+#### Built: `skills/client-intake/scripts/process_reading.py`
+Deterministic pre-processor called by the astro-reading-processor cron:
+- Claims next pending reading (marks processing)
+- Runs `chart.py natal` → natal text data
+- Runs `chart.py image` → PNG chart file (~/.openclaw/media/outbound/)
+- Runs `chart.py transits-to-natal` → current sky overlay
+- Outputs structured JSON context for Astro-Grok to write the interpretation
+- Includes delivery instructions and mark-done command in the output
+
+#### Discord intake modal (5 fields)
+```
+Title: Chart Reading Request
+Button: "Request a Reading 🔮" (primary style)
+Fields:
+  1. Your Name (short, required)
+  2. Birth Date — YYYY-MM-DD (short, required)
+  3. Birth Time — HH:MM or 'unknown' (short, required)
+  4. Birth City & Country (short, required)
+  5. Questions / Focus Areas (paragraph, optional)
+```
+
+#### Cron jobs added
+- `astro-reading-processor` — every 15 min, grok41-fast — picks up next pending reading, generates chart, delivers to Discord
+- `astro-intake-card-refresh` — every Monday 9 AM — checks if card message ID is null and re-posts the intake card if needed
+
+#### Other files
+- `state/pending-readings.json` — initialized with `{card_message_id: null, readings: []}`
+- `tasks/lessons.md` — created for astro-agent (was missed in Session 1)
+- `AGENTS.md` — added Client Chart Reading Intake section + Step 7 (read lessons.md)
+
+#### Next step for Nostem (manual)
+Post the intake card for the first time:
+1. Tell astro-agent: "Post the reading intake card to Discord"
+2. It will use the modal block in SKILL.md Step 1
+3. Or wait for Monday's `astro-intake-card-refresh` cron to auto-post it
+
+---
+
+### GitHub Tracking
+Added `CHANGELOG.md` and `README.md` to `Nostem/Claude-Sessions/OpenClaw/` for session tracking.
+Changelog updated after each seq completion going forward.
