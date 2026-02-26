@@ -498,3 +498,21 @@ The agent was confusing the `message` text parameter with `messageId` (a Discord
 > ⚠️ CRITICAL: text content goes in `message` — NOT `messageId`. `messageId` is a Discord identifier.
 
 Lesson updated in `tasks/lessons.md`. Reading reset to `pending` for next cron run.
+#### Root Cause — Final (Session 4 followup 2)
+
+After a third failed run at 10:01 AM, the definitive root cause was found by reading `skills/discord-advanced/SKILL.md`:
+
+**The agent was using the WRONG ACTION for thread replies.**
+
+- **What the agent used (BROKEN):** `message(action="send", target="<channel>", threadId="<thread>", messageId="<text>")`
+- **What the tool requires (CORRECT):** `message(action="thread-reply", channel="discord", threadId="<thread>", message="<text>")`
+
+`action="thread-reply"` is the documented action for posting to Discord threads (SKILL.md §4B). The `action="send"` + `threadId` combination is not a valid pattern — it explains both the `"message required"` error AND why the agent kept using `messageId` (it was copying the image caption pattern where `messageId` = caption text for `action="send"`).
+
+**Third cron fix:** Step 4c now explicitly specifies:
+```
+message(action="thread-reply", channel="discord", threadId="<THREAD_ID>", message="<section text>")
+```
+With note: "Do NOT use action='send' with threadId — that is wrong and will fail."
+
+Lesson updated with final definitive rule. Reading reset to `pending`.
