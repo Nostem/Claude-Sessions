@@ -381,3 +381,51 @@ Discovered and fixed during first live reading submission (Alfredo Montan):
 - State data migrated from `skills/state/` to correct `state/` path
 - Card message ID (`1476285049220370618`) and reading saved correctly
 - Lesson added to `tasks/lessons.md`
+
+---
+
+## Session 3 — 2026-02-25
+
+### Bashar Transcript Reformat (seq 5 — done)
+**Script**: `workspace/scripts/reformat_bashar.py`
+**State**: `state/bashar-reformat-progress.json`
+
+**What was built:**
+- `reformat_bashar.py` — deterministic reformatter for 1,197 Bashar transcript KB entries
+  - Merges consecutive `**BASHAR:**` lines into clean unlabeled paragraphs
+  - Converts `**QUESTIONER:**` lines to `**Q:**` prefix
+  - Strips `[Music]`, `[Applause]`, `[Laughter]` sound cues
+  - Cleans titles: `"(2014 01 25) Bashar   Cosmic Awakening.en fixed"` → `"Cosmic Awakening — Bashar (January 25, 2014)"`
+  - Updates `title` column in `kb.db`
+  - Progress tracking via `state/bashar-reformat-progress.json`
+  - Flags: `--limit`, `--dry-run`, `--entry-id`, `--list-pending`, `--list-pending-topics`, `--set-topics`, `--stats`
+
+**Results:**
+- 1,178 entries successfully reformatted
+- 19 entries skipped (different format — YouTube summaries, already clean)
+- All 1,197 entries marked `format_done`
+
+### Bashar Topic Re-Analyzer Cron (Phase 2)
+**Cron job**: `bashar-topic-reanalyzer`
+**Schedule**: 3am + 3pm daily (2×/day)
+**Agent**: kimi-agent / minimax model
+**Batch size**: 30 entries per run (~20 days to full completion)
+
+Replaces generic topic tags (`money, relationships, health`) with per-entry specific topics analyzed from actual transcript content.
+
+**Script flags for Phase 2:**
+- `--list-pending-topics --limit N` → JSON list of entries + transcript excerpts for LLM analysis
+- `--set-topics ENTRY_ID --topics '["t1","t2"]'` → writes analyzed topics to YAML + DB
+
+### Initiative Queue Updated
+- New seq 5: `bashar-transcript-reformat` (done)
+- Old seq 5→6: `kb-entity-backfill-cron` (still active)
+- Items renumbered 6–19 accordingly
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `workspace/scripts/reformat_bashar.py` | Created — 420 lines |
+| `state/bashar-reformat-progress.json` | Created — tracks 1,197 entries |
+| `cron/jobs.json` | Added `bashar-topic-reanalyzer` job |
+| `workspace-main/state/initiative_queue.json` | Inserted seq 5, renumbered 6–19 |
