@@ -10,9 +10,9 @@
     "ruflo": "alpha"
   },
   "scripts": {
-    "mcp": "ruflo mcp start",
-    "flow:init": "ruflo init",
-    "flow:list": "ruflo --list",
-    "flow:status": "ruflo swarm status"
+    "mcp": "npx ruflo@alpha mcp start",
+    "flow:init": "npx ruflo@alpha init",
+    "flow:list": "npx ruflo@alpha --list",
+    "flow:status": "npx ruflo@alpha swarm status"
   }
 }
