@@ -1,0 +1,18 @@
+{
+  "name": "claude-sessions",
+  "version": "1.0.0",
+  "description": "Claude Code session workspace — OpenClaw & Polygun-trading",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ruflo": "alpha"
+  },
+  "scripts": {
+    "mcp": "ruflo mcp start",
+    "flow:init": "ruflo init",
+    "flow:list": "ruflo --list",
+    "flow:status": "ruflo swarm status"
+  }
+}
