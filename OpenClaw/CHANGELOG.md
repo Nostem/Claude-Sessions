@@ -480,3 +480,21 @@ New entry in `workspace-astro-agent/tasks/lessons.md`:
 | `cron/jobs.json` | `astro-reading-processor` message hardened — explicit `message` param, error handling |
 | `workspace-astro-agent/tasks/lessons.md` | Added lesson: empty message tool calls cause silent thread failure |
 | `workspace-astro-agent/state/pending-readings.json` | Reset rdg-20260225-01a959 to pending |
+#### Root Cause Identified (Session 4 followup)
+
+After second failed run at 09:45, exact bug confirmed in session transcript `678b57b4`, event 124:
+
+```
+// Agent called (WRONG — text in "messageId"):
+message(action="send", threadId="1476590...", messageId="**Section 1: Chart Facts**...")
+
+// Should be (CORRECT — text in "message"):
+message(action="send", threadId="1476590...", message="**Section 1: Chart Facts**...")
+```
+
+The agent was confusing the `message` text parameter with `messageId` (a Discord message identifier). When the cron instructions said "save the messageId returned", the agent conflated that with using `messageId` as the content field. Discord tool returned `"message required"` on all 3 sections.
+
+**Second cron fix:** Rewrote step 4 with explicit call signatures showing `message="<text>"` and added:
+> ⚠️ CRITICAL: text content goes in `message` — NOT `messageId`. `messageId` is a Discord identifier.
+
+Lesson updated in `tasks/lessons.md`. Reading reset to `pending` for next cron run.
