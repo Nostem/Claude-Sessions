@@ -429,3 +429,54 @@ Replaces generic topic tags (`money, relationships, health`) with per-entry spec
 | `state/bashar-reformat-progress.json` | Created — tracks 1,197 entries |
 | `cron/jobs.json` | Added `bashar-topic-reanalyzer` job |
 | `workspace-main/state/initiative_queue.json` | Inserted seq 5, renumbered 6–19 |
+---
+
+## Session 4 — 2026-02-26
+
+### Astro Reading Delivery: Thread Interpretation Fix
+
+**Problem:** The `astro-reading-processor` cron was successfully generating the chart image and creating the thread — but the interpretation (natal chart reading text) was never posted to the thread. The thread remained empty every run.
+
+#### Root Cause Found (Thread Message Empty Parameters)
+Investigated the most recent session transcript (`678b57b4-830a-4361-b4a9-7f6858f63022.jsonl`):
+
+| Step | Result |
+|------|--------|
+| process_reading.py | ✅ chart_ok=true, full natal_text + transits_text |
+| Post chart image to channel | ✅ messageId returned |
+| Create thread | ✅ thread ID returned |
+| Post interpretation to thread | ❌ 3 calls with `{}` — error: `"message required"` |
+| Mark reading done | ❌ marked done anyway despite all 3 failures |
+
+The agent was calling the message tool with **empty parameters** `{}` when posting interpretation text to the thread. The cron message said _"Post the full interpretation IN THE THREAD"_ but did not specify the parameter name. The agent's text response contained the interpretation but it was never included in the tool call arguments.
+
+#### Fix: Cron Message Hardened
+Updated `cron/jobs.json` → `astro-reading-processor` message:
+
+**Step 3 added:** Compose interpretation with labeled sections (Section 1, Section 2...) BEFORE moving to delivery.
+
+**Step 4c rewritten** — now explicitly states:
+```
+For EACH section call the message tool with:
+  - channelId: <thread ID>
+  - message: <the actual text of this section — NOT empty>
+CRITICAL: The "message" parameter must contain real text.
+```
+
+**Error handling added:** If any section returns no messageId, call `--mark-failed` immediately. Never `--mark-done` after thread posting failures.
+
+**Step 6 updated:** Reply now requires section count (`Thread: N sections posted`).
+
+#### Reading State Reset
+Alfredo Montan's reading (`rdg-20260225-01a959`) reset to `pending` for re-processing on next cron run.
+
+#### Lesson Added
+New entry in `workspace-astro-agent/tasks/lessons.md`:
+> When posting text to a Discord thread, the `message` parameter must contain the actual interpretation text. Never call the message tool with empty parameters. Verify each call returns a messageId before continuing. If any post fails, call `--mark-failed` — never `--mark-done`.
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `cron/jobs.json` | `astro-reading-processor` message hardened — explicit `message` param, error handling |
+| `workspace-astro-agent/tasks/lessons.md` | Added lesson: empty message tool calls cause silent thread failure |
+| `workspace-astro-agent/state/pending-readings.json` | Reset rdg-20260225-01a959 to pending |
