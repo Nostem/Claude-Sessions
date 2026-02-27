@@ -30,11 +30,14 @@ echo ""
 read -rsp "ANTHROPIC_API_KEY: " ANTHROPIC_KEY; echo
 read -rsp "BRAVE_API_KEY (Enter to skip): " BRAVE_KEY; echo
 
-# Install Python dependencies
-pip3 install -r "$SCRIPT_DIR/requirements.txt" --quiet
+# Install Python dependencies in a virtual environment
+VENV="$RUNTIME/venv"
+python3 -m venv "$VENV"
+"$VENV/bin/pip" install -r "$SCRIPT_DIR/requirements.txt" --quiet
 
 # Write plist with real values
 sed \
+    -e "s|PLACEHOLDER_PYTHON_PATH|$VENV/bin/python3|g" \
     -e "s|PLACEHOLDER_SCRIPT_PATH|$SCRIPT_DIR/obsidian-watcher.py|g" \
     -e "s|PLACEHOLDER_DAILY_NOTES_PATH|$DAILY_PATH|g" \
     -e "s|PLACEHOLDER_LOG_PATH|$LOGS|g" \

@@ -8,7 +8,7 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
+        <string>PLACEHOLDER_PYTHON_PATH</string>
         <string>PLACEHOLDER_SCRIPT_PATH</string>
     </array>
 
