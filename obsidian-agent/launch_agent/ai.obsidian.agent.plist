@@ -12,14 +12,6 @@
         <string>PLACEHOLDER_SCRIPT_PATH</string>
     </array>
 
-    <key>WatchPaths</key>
-    <array>
-        <string>PLACEHOLDER_DAILY_NOTES_PATH</string>
-    </array>
-
-    <key>ThrottleInterval</key>
-    <integer>10</integer>
-
     <key>RunAtLoad</key>
     <true/>
 

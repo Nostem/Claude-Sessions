@@ -21,11 +21,6 @@ if [ ! -f "$RUNTIME/config.json" ]; then
     read
 fi
 
-# Read vault + daily notes path from config
-VAULT=$(python3 -c "import json,os; c=json.load(open('$RUNTIME/config.json')); print(os.path.expanduser(c['vault_path']))")
-DAILY=$(python3 -c "import json; c=json.load(open('$RUNTIME/config.json')); print(c.get('daily_notes_folder','Daily Notes'))")
-DAILY_PATH="$VAULT/$DAILY"
-
 echo ""
 read -rsp "ANTHROPIC_API_KEY: " ANTHROPIC_KEY; echo
 read -rsp "BRAVE_API_KEY (Enter to skip): " BRAVE_KEY; echo
@@ -39,7 +34,6 @@ python3 -m venv "$VENV"
 sed \
     -e "s|PLACEHOLDER_PYTHON_PATH|$VENV/bin/python3|g" \
     -e "s|PLACEHOLDER_SCRIPT_PATH|$SCRIPT_DIR/obsidian-watcher.py|g" \
-    -e "s|PLACEHOLDER_DAILY_NOTES_PATH|$DAILY_PATH|g" \
     -e "s|PLACEHOLDER_LOG_PATH|$LOGS|g" \
     -e "s|PLACEHOLDER_ANTHROPIC_KEY|$ANTHROPIC_KEY|g" \
     -e "s|PLACEHOLDER_BRAVE_KEY|$BRAVE_KEY|g" \
