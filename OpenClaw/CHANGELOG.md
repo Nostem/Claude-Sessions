@@ -7,6 +7,16 @@ Tracking all changes made to the OpenClaw multi-agent setup across Claude Code s
 
 ---
 
+## 2026-02-27
+- Added PreToolUse secret-scanner hook (blocks Write/Edit/Bash if secrets detected)
+- Added PreCompact hook (snapshots git context to `.claude/context-snapshot.md` before compression)
+- Added Stop hook (end-of-session wrap-up checklist with uncommitted file warning)
+- Added `/checkpoint`, `/wrap-up`, `/plan`, `/commit` slash commands to `.claude/commands/`
+- Registered GitHub, filesystem, and sequential-thinking MCP servers in `settings.json`
+- All changes committed and pushed to `claude/evaluate-toolkit-integration-f1fpV`
+
+---
+
 ## Session 2 — 2026-02-25
 
 ### Obsidian Daily Note Pipeline (seq 2 of initiative queue)
