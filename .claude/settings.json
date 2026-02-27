@@ -10,14 +10,5 @@
         ]
       }
     ]
-  },
-  "mcpServers": {
-    "ruflo": {
-      "command": "npx",
-      "args": ["ruflo@alpha", "mcp", "start"],
-      "env": {
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
-      }
-    }
   }
 }

@@ -80,63 +80,20 @@ install once with:
 
 ## claude-flow (ruflo) Integration
 
-### MCP Tools (when `npm run mcp` is running locally)
+ruflo provides multi-agent orchestration and memory when running locally.
+Start with `npm run mcp` — tools (swarm_init, agent_spawn, memory_search, etc.)
+become available as MCP tools. See ruflo docs for full tool list.
 
-| Tool | Purpose |
-|------|---------|
-| `swarm_init` | Initialize a hierarchical agent swarm |
-| `agent_spawn` | Launch a specialized agent (coder, researcher, analyst…) |
-| `task_orchestrate` | Coordinate multi-step workflows across agents |
-| `memory_search` | Semantic vector search over past session patterns |
-| `memory_store` | Persist patterns for future session reuse |
-| `neural_train` | Trigger self-learning from recent patterns |
-| `github_swarm` | Automate GitHub repo tasks with agent swarms |
-| `swarm_status` | Check real-time coordination metrics |
-
-### Task Complexity → Agent Strategy
-
-| Complexity | Trigger | Approach |
-|------------|---------|----------|
-| Simple (1 file, <50 lines) | Single edit | Direct tool use |
-| Medium (2–5 files) | Feature addition | superpowers brainstorm → plan → execute |
-| Complex (3+ files, new features) | Multi-file refactor | `swarm_init` → `agent_spawn` → subagent-driven-development |
-| Large (cross-repo, architecture) | System redesign | Hive-mind with queen coordination |
-
-### Model Routing (Cost Optimization)
-
-| Task Type | Model | Cost |
-|-----------|-------|------|
-| Simple transforms, boilerplate | Agent Booster (WASM) | Free |
-| Structured edits, summaries | Haiku | ~$0.001 |
-| Feature implementation, analysis | Sonnet | ~$0.003 |
-| Architecture, complex reasoning | Opus | ~$0.015 |
-
-### Memory-Driven Sessions
-
-Before any non-trivial task:
-```
-memory_search: "relevant keywords"
-```
-
-After completing a task:
-```
-memory_store: { pattern, outcome, tags }
-```
-
-### Starting the MCP Server
-```bash
-npm run mcp    # from the Claude-Sessions repo root
-```
+**Note:** ruflo MCP is local-only. Do not add it to `.claude/settings.json` for
+web sessions — it causes hangs on startup.
 
 ---
 
 ## Session Startup Checklist
 
 1. Check `CHANGELOG.md` in the relevant project folder for prior context
-2. Run `memory_search` for the task domain to surface past patterns
-3. **Always invoke `brainstorming` before implementing anything**
-4. Create a `TodoWrite` list (5+ items for complex tasks)
-5. Store successful patterns to memory before ending the session
+2. **Always invoke `brainstorming` before implementing anything**
+3. Create a `TodoWrite` list (5+ items for complex tasks)
 
 ---
 
@@ -175,12 +132,10 @@ Algorithmic trading strategy workspace.
 
 ---
 
-## Quick Commands
+## Quick Commands (local only)
 
 ```bash
-npm run mcp              # Start ruflo MCP server (local)
+npm run mcp              # Start ruflo MCP server
 npm run flow:list        # List available agents
 npm run flow:status      # Check swarm status
-npx ruflo hive-mind spawn "objective"    # Launch agent swarm
-npx ruflo memory search -q "keywords"   # Search session memory
 ```
