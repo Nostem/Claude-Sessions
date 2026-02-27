@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.obsidian.agent</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>PLACEHOLDER_SCRIPT_PATH</string>
+    </array>
+
+    <key>WatchPaths</key>
+    <array>
+        <string>PLACEHOLDER_DAILY_NOTES_PATH</string>
+    </array>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>PLACEHOLDER_LOG_PATH/stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>PLACEHOLDER_LOG_PATH/stderr.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>ANTHROPIC_API_KEY</key>
+        <string>PLACEHOLDER_ANTHROPIC_KEY</string>
+        <key>BRAVE_API_KEY</key>
+        <string>PLACEHOLDER_BRAVE_KEY</string>
+    </dict>
+</dict>
+</plist>
