@@ -1,0 +1,14 @@
+{
+  "_comment": "Copy to ~/.obsidian-agent/config.json and fill in your values",
+  "vault_path": "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Files",
+  "daily_notes_folder": "Daily Notes",
+  "output_folder": "Zettelkasten",
+  "website_repo_local": "~/.obsidian-agent/repos/nostem.github.io",
+  "website_repo_remote": "https://github.com/Nostem/nostem.github.io",
+  "bookshelf_file": "data/books.json",
+  "model": "claude-sonnet-4-6",
+  "max_memory_lines": 100,
+  "search_provider": "brave",
+  "search_api_key_env": "BRAVE_API_KEY",
+  "anthropic_api_key_env": "ANTHROPIC_API_KEY"
+}
