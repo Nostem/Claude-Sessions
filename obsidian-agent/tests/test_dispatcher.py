@@ -26,3 +26,11 @@ def test_unknown_tag_is_ignored():
     with patch("obsidian_agent.dispatcher.handle_research") as m:
         dispatch("unknowntag", "arg", cfg(), "", "2026-02-27")
         m.assert_not_called()
+
+def test_dispatch_returns_handler_result():
+    with patch("obsidian_agent.dispatcher.handle_research", return_value="/vault/note.md") as m,\
+         patch("obsidian_agent.dispatcher.handle_book"),\
+         patch("obsidian_agent.dispatcher.handle_writingprompt"),\
+         patch("obsidian_agent.dispatcher.handle_reflect"):
+        result = dispatch("research", "cold exposure", cfg(), "", "2026-02-27")
+        assert result == "/vault/note.md"

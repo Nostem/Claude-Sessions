@@ -37,3 +37,15 @@ def test_returns_hash():
 
 def test_empty_note():
     assert parse_tags("") == []
+
+def test_strips_agent_complete_annotation():
+    # Already-annotated bullets should parse to the original arg (prevents re-dispatch)
+    tags = parse_tags("- #research cold exposure 'Agent Complete' [[2026-02-27 - Cold Exposure]]")
+    assert len(tags) == 1
+    assert tags[0]["argument"] == "cold exposure"
+
+def test_strips_annotation_hash_matches_original():
+    # Hash of annotated line must equal hash of original (same state key → no re-dispatch)
+    original = parse_tags("- #research cold exposure")
+    annotated = parse_tags("- #research cold exposure 'Agent Complete' [[2026-02-27 - Cold Exposure]]")
+    assert original[0]["hash"] == annotated[0]["hash"]

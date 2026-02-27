@@ -14,4 +14,4 @@ def dispatch(tag: str, argument: str, config: dict, memory_context: str, date: s
     name = _HANDLER_NAMES.get(tag.lower())
     if name:
         handler = globals()[name]
-        handler(argument, config, memory_context=memory_context, date=date)
+        return handler(argument, config, memory_context=memory_context, date=date)
